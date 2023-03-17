@@ -46,6 +46,7 @@ public class Main extends JDialog implements NativeKeyListener {
         trayIcon = new TrayIcon(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/trayicon/trayrun.png"))).getImage());
 
         JPanel mainPanel = new JPanel();
+        mainPanel.setBackground(Color.WHITE);
         mainPanel.setLayout(new BorderLayout());
 
         mainLabel = new JLabel("未运行");
@@ -103,7 +104,7 @@ public class Main extends JDialog implements NativeKeyListener {
                     isShow = false;
                     timer.cancel();
                 }
-            }, 1500);
+            }, 800);
         }
     }
 
