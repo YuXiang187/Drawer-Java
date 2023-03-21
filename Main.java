@@ -30,6 +30,7 @@ public class Main extends JDialog implements NativeKeyListener {
         setTitle("YuXiang Drawer");
         setSize(450, 250);
         setIconImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/icon/run.png"))).getImage());
+        setResizable(false);
         setLocationRelativeTo(null);
         setAlwaysOnTop(true);
         setVisible(false);
@@ -48,6 +49,23 @@ public class Main extends JDialog implements NativeKeyListener {
         JPanel mainPanel = new JPanel();
         mainPanel.setBackground(Color.WHITE);
         mainPanel.setLayout(new BorderLayout());
+        mainPanel.addMouseListener(new MouseListener() {
+            public void mouseClicked(MouseEvent e) {
+                run();
+            }
+
+            public void mousePressed(MouseEvent e) {
+            }
+
+            public void mouseReleased(MouseEvent e) {
+            }
+
+            public void mouseEntered(MouseEvent e) {
+            }
+
+            public void mouseExited(MouseEvent e) {
+            }
+        });
 
         mainLabel = new JLabel("未运行");
         mainLabel.setFont(new Font("微软雅黑", Font.BOLD, 80));
