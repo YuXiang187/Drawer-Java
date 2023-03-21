@@ -51,7 +51,9 @@ public class Main extends JDialog implements NativeKeyListener {
         mainPanel.setLayout(new BorderLayout());
         mainPanel.addMouseListener(new MouseListener() {
             public void mouseClicked(MouseEvent e) {
-                run();
+                if (!isRun) {
+                    setVisible(false);
+                }
             }
 
             public void mousePressed(MouseEvent e) {
@@ -70,6 +72,32 @@ public class Main extends JDialog implements NativeKeyListener {
         mainLabel = new JLabel("未运行");
         mainLabel.setFont(new Font("微软雅黑", Font.BOLD, 80));
         mainLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        mainLabel.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                run();
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+
+            }
+        });
 
         mainPanel.add(mainLabel, BorderLayout.CENTER);
         setContentPane(mainPanel);
@@ -122,7 +150,7 @@ public class Main extends JDialog implements NativeKeyListener {
                     isShow = false;
                     timer.cancel();
                 }
-            }, 800);
+            }, 600);
         }
     }
 
