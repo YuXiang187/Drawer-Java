@@ -1,3 +1,4 @@
+import com.formdev.flatlaf.FlatLightLaf;
 import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.NativeHookException;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
@@ -14,26 +15,32 @@ import java.util.TimerTask;
 public class Main extends JDialog implements NativeKeyListener {
     boolean isRun = false;
     boolean isShow = false;
+    boolean isControl = true;
 
     JLabel mainLabel;
     Thread thread;
     Timer timer;
     TrayIcon trayIcon;
+    String[] items = {"Item1", "Item2", "Item3"};
+
+    MenuItem runItem;
+    MenuItem switchItem;
 
     public void nativeKeyPressed(NativeKeyEvent e) {
         if (e.getKeyCode() == 29) {
-            run();
+            if (isControl) {
+                run();
+            }
         }
     }
 
     public Main() {
         setTitle("YuXiang Drawer");
         setSize(450, 250);
+        setLocationRelativeTo(null);
         setIconImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/icon/run.png"))).getImage());
         setResizable(false);
-        setLocationRelativeTo(null);
         setAlwaysOnTop(true);
-        setVisible(false);
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             @Override
@@ -47,7 +54,6 @@ public class Main extends JDialog implements NativeKeyListener {
         trayIcon = new TrayIcon(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/trayicon/trayrun.png"))).getImage());
 
         JPanel mainPanel = new JPanel();
-        mainPanel.setBackground(Color.WHITE);
         mainPanel.setLayout(new BorderLayout());
 
         mainLabel = new JLabel("未运行");
@@ -71,9 +77,13 @@ public class Main extends JDialog implements NativeKeyListener {
 
             PopupMenu popupMenu = new PopupMenu();
 
-            MenuItem runItem = new MenuItem("运行(Ctrl)");
+            runItem = new MenuItem("运行(Ctrl)");
             runItem.addActionListener(e -> run());
             popupMenu.add(runItem);
+
+            switchItem = new MenuItem("热键(开)");
+            switchItem.addActionListener(e -> control());
+            popupMenu.add(switchItem);
 
             MenuItem exitItem = new MenuItem("退出");
             exitItem.addActionListener(e -> System.exit(0));
@@ -89,6 +99,18 @@ public class Main extends JDialog implements NativeKeyListener {
         } else {
             JOptionPane.showMessageDialog(null, "您当前的操作系统不支持系统托盘。");
             System.exit(0);
+        }
+    }
+
+    private void control() {
+        if (isControl) {
+            isControl = false;
+            runItem.setLabel("运行");
+            switchItem.setLabel("热键(关)");
+        } else {
+            isControl = true;
+            runItem.setLabel("运行(Ctrl)");
+            switchItem.setLabel("热键(开)");
         }
     }
 
@@ -113,7 +135,7 @@ public class Main extends JDialog implements NativeKeyListener {
                     isShow = false;
                     timer.cancel();
                 }
-            }, 600);
+            }, 650);
         }
     }
 
@@ -124,7 +146,6 @@ public class Main extends JDialog implements NativeKeyListener {
         isRun = true;
         thread = new Thread(() -> {
             Random random = new Random();
-            String[] items = {"Item1", "Item2", "Item3"};
             int index;
             while (isRun) {
                 index = random.nextInt(items.length);
@@ -151,6 +172,7 @@ public class Main extends JDialog implements NativeKeyListener {
     }
 
     public static void main(String[] args) {
+        FlatLightLaf.setup();
         try {
             GlobalScreen.registerNativeHook();
         } catch (NativeHookException ex) {
