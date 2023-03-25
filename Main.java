@@ -7,6 +7,9 @@ import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Timer;
@@ -21,7 +24,7 @@ public class Main extends JDialog implements NativeKeyListener {
     Thread thread;
     Timer timer;
     TrayIcon trayIcon;
-    String[] items = {"Item1", "Item2", "Item3"};
+    String[] items;
 
     MenuItem runItem;
     MenuItem switchItem;
@@ -35,6 +38,13 @@ public class Main extends JDialog implements NativeKeyListener {
     }
 
     public Main() {
+        try {
+            EncryptString es = new EncryptString();
+            items = es.decrypt(readFile()).split(",");
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "list.es文件读取错误，无法启动本程序。", "YuXiang Drawer", JOptionPane.ERROR_MESSAGE);
+        }
+
         setTitle("YuXiang Drawer");
         setSize(450, 250);
         setLocationRelativeTo(null);
@@ -97,7 +107,7 @@ public class Main extends JDialog implements NativeKeyListener {
                 e.printStackTrace();
             }
         } else {
-            JOptionPane.showMessageDialog(null, "您当前的操作系统不支持系统托盘。");
+            JOptionPane.showMessageDialog(null, "您当前的操作系统不支持系统托盘，无法启动本程序。", "YuXiang Drawer", JOptionPane.ERROR_MESSAGE);
             System.exit(0);
         }
     }
@@ -171,12 +181,26 @@ public class Main extends JDialog implements NativeKeyListener {
         }
     }
 
+    private String readFile() {
+        StringBuilder contentBuilder = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new FileReader("list.es"))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                contentBuilder.append(line);
+            }
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(null, "list.es文件读取错误，无法启动本程序。", "YuXiang Drawer", JOptionPane.ERROR_MESSAGE);
+            System.exit(0);
+        }
+        return contentBuilder.toString();
+    }
+
     public static void main(String[] args) {
         FlatLightLaf.setup();
         try {
             GlobalScreen.registerNativeHook();
         } catch (NativeHookException ex) {
-            JOptionPane.showMessageDialog(null, "系统按键注册失败。");
+            JOptionPane.showMessageDialog(null, "系统按键注册失败，无法启动本程序。", "YuXiang Drawer", JOptionPane.ERROR_MESSAGE);
             System.exit(0);
         }
         GlobalScreen.addNativeKeyListener(new Main());
