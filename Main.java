@@ -43,6 +43,7 @@ public class Main extends JDialog implements NativeKeyListener {
             items = es.decrypt(readFile()).split(",");
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "list.es文件读取错误，无法启动本程序。", "YuXiang Drawer", JOptionPane.ERROR_MESSAGE);
+            System.exit(0);
         }
 
         setTitle("YuXiang Drawer");
