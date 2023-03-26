@@ -2,7 +2,7 @@
 
 一个简易的抽奖程序。
 
-在程序根目录下必须要有`list.es`文件才能启动此程序。此文件为**加密**文件，请使用[DrawEditor](https://github.com/YuXiang187/DrawEditor)编辑。
+在程序根目录下必须要有`list.es`文件才能启动此程序。此文件为**加密**文件，请使用[CipherPad](https://github.com/YuXiang187/CipherPad)编辑。
 
 `list.es`文件语法为：
 
