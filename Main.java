@@ -10,12 +10,12 @@ import java.awt.event.*;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Objects;
-import java.util.Random;
+import java.util.*;
+import java.util.List;
 import java.util.Timer;
-import java.util.TimerTask;
 
 public class Main extends JDialog implements NativeKeyListener {
+    int poolIndex;
     boolean isRun = false;
     boolean isShow = false;
     boolean isControl = true;
@@ -24,8 +24,8 @@ public class Main extends JDialog implements NativeKeyListener {
     Thread thread;
     Timer timer;
     TrayIcon trayIcon;
-    String[] items;
-
+    List<String> initPool;
+    List<String> pool;
     MenuItem runItem;
     MenuItem switchItem;
 
@@ -40,11 +40,12 @@ public class Main extends JDialog implements NativeKeyListener {
     public Main() {
         try {
             EncryptString es = new EncryptString();
-            items = es.decrypt(readFile()).split(",");
+            initPool = new ArrayList<>(Arrays.asList(es.decrypt(readFile()).split(",")));
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "list.es文件读取错误，无法启动本程序。", "YuXiang Drawer", JOptionPane.ERROR_MESSAGE);
             System.exit(0);
         }
+        pool = new ArrayList<>(initPool);
 
         setTitle("YuXiang Drawer");
         setSize(450, 250);
@@ -154,13 +155,15 @@ public class Main extends JDialog implements NativeKeyListener {
         mainLabel.setForeground(Color.GRAY);
         trayIcon.setImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/trayicon/traystop.png"))).getImage());
         setIconImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/icon/stop.png"))).getImage());
+        if (pool.size() == 0) {
+            pool = new ArrayList<>(initPool);
+        }
         isRun = true;
         thread = new Thread(() -> {
             Random random = new Random();
-            int index;
             while (isRun) {
-                index = random.nextInt(items.length);
-                mainLabel.setText(items[index]);
+                poolIndex = random.nextInt(pool.size());
+                mainLabel.setText(pool.get(poolIndex));
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
@@ -180,6 +183,7 @@ public class Main extends JDialog implements NativeKeyListener {
             thread.interrupt();
             thread = null;
         }
+        pool.remove(poolIndex);
     }
 
     private String readFile() {
