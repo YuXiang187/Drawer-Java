@@ -97,6 +97,15 @@ public class Main extends JDialog implements NativeKeyListener {
             switchItem.addActionListener(e -> control());
             popupMenu.add(switchItem);
 
+            MenuItem resetItem = new MenuItem("重置");
+            resetItem.addActionListener(e -> {
+                int isReset = JOptionPane.showConfirmDialog(Main.this, "是否重置？", "YuXiang Drawer", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                if (isReset == 0) {
+                    pool = new ArrayList<>(initPool);
+                }
+            });
+            popupMenu.add(resetItem);
+
             MenuItem exitItem = new MenuItem("退出");
             exitItem.addActionListener(e -> System.exit(0));
             popupMenu.add(exitItem);
