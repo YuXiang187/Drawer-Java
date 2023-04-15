@@ -29,7 +29,7 @@ public class StringPool {
             public void run() {
                 saveFile();
             }
-        }, 0, 1200000);
+        }, 0, 600000);
     }
 
     public String get(int index) {
