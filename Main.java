@@ -7,12 +7,11 @@ import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.*;
-import java.util.List;
 import java.util.Timer;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class Main extends JDialog implements NativeKeyListener {
     int poolIndex;
@@ -24,10 +23,9 @@ public class Main extends JDialog implements NativeKeyListener {
     Thread thread;
     Timer timer;
     TrayIcon trayIcon;
-    List<String> initPool;
-    List<String> pool;
     MenuItem runItem;
     MenuItem switchItem;
+    StringPool pool;
 
     public void nativeKeyPressed(NativeKeyEvent e) {
         if (e.getKeyCode() == 29) {
@@ -38,14 +36,7 @@ public class Main extends JDialog implements NativeKeyListener {
     }
 
     public Main() {
-        try {
-            EncryptString es = new EncryptString();
-            initPool = new ArrayList<>(Arrays.asList(es.decrypt(readFile()).split(",")));
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "list.es文件读取错误，无法启动本程序。", "YuXiang Drawer", JOptionPane.ERROR_MESSAGE);
-            System.exit(0);
-        }
-        pool = new ArrayList<>(initPool);
+        pool = new StringPool();
 
         setTitle("YuXiang Drawer");
         setSize(450, 250);
@@ -97,14 +88,34 @@ public class Main extends JDialog implements NativeKeyListener {
             switchItem.addActionListener(e -> control());
             popupMenu.add(switchItem);
 
+            popupMenu.addSeparator();
+
             MenuItem resetItem = new MenuItem("重置");
             resetItem.addActionListener(e -> {
-                int isReset = JOptionPane.showConfirmDialog(Main.this, "是否重置？", "YuXiang Drawer", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                int isReset = JOptionPane.showConfirmDialog(Main.this, "是否重置pool.es文件？", "YuXiang Drawer", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
                 if (isReset == 0) {
-                    pool = new ArrayList<>(initPool);
+                    pool.reset();
                 }
             });
             popupMenu.add(resetItem);
+
+            MenuItem saveItem = new MenuItem("保存");
+            saveItem.addActionListener(e -> {
+                pool.saveFile();
+                ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+                trayIcon.setImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/trayicon/ok.png"))).getImage());
+                executor.schedule(() -> {
+                    if (isRun) {
+                        trayIcon.setImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/trayicon/traystop.png"))).getImage());
+                    } else {
+                        trayIcon.setImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/trayicon/trayrun.png"))).getImage());
+                    }
+                    executor.shutdown();
+                }, 1, TimeUnit.SECONDS);
+            });
+            popupMenu.add(saveItem);
+
+            popupMenu.addSeparator();
 
             MenuItem exitItem = new MenuItem("退出");
             exitItem.addActionListener(e -> System.exit(0));
@@ -164,14 +175,14 @@ public class Main extends JDialog implements NativeKeyListener {
         mainLabel.setForeground(Color.GRAY);
         trayIcon.setImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/trayicon/traystop.png"))).getImage());
         setIconImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/icon/stop.png"))).getImage());
-        if (pool.size() == 0) {
-            pool = new ArrayList<>(initPool);
+        if (pool.length() == 0) {
+            pool.reset();
         }
         isRun = true;
         thread = new Thread(() -> {
             Random random = new Random();
             while (isRun) {
-                poolIndex = random.nextInt(pool.size());
+                poolIndex = random.nextInt(pool.length());
                 mainLabel.setText(pool.get(poolIndex));
                 try {
                     Thread.sleep(100);
@@ -193,20 +204,6 @@ public class Main extends JDialog implements NativeKeyListener {
             thread = null;
         }
         pool.remove(poolIndex);
-    }
-
-    private String readFile() {
-        StringBuilder contentBuilder = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(new FileReader("list.es"))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                contentBuilder.append(line);
-            }
-        } catch (IOException e) {
-            JOptionPane.showMessageDialog(null, "list.es文件读取错误，无法启动本程序。", "YuXiang Drawer", JOptionPane.ERROR_MESSAGE);
-            System.exit(0);
-        }
-        return contentBuilder.toString();
     }
 
     public static void main(String[] args) {
