@@ -23,7 +23,7 @@ public class StringPool {
             JOptionPane.showMessageDialog(null, "list.es或pool.es文件读取错误，无法启动本程序。", "YuXiang Drawer", JOptionPane.ERROR_MESSAGE);
             System.exit(0);
         }
-        if (pool.size() == 0) {
+        if (pool.get(0).equals("")) {
             pool = new ArrayList<>(initPool);
         }
         Timer timer = new Timer();
