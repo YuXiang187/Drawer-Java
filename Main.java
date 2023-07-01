@@ -7,24 +7,19 @@ import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.*;
 import java.util.Timer;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.Objects;
+import java.util.TimerTask;
 
 public class Main extends JDialog implements NativeKeyListener {
-    int poolIndex;
     boolean isRun = false;
-    boolean isShow = false;
     boolean isControl = true;
 
     JLabel mainLabel;
-    Thread thread;
-    Timer timer;
+    Timer randomTimer;
+    Timer closeTimer;
     TrayIcon trayIcon;
-    MenuItem runItem;
-    MenuItem switchItem;
+    JProgressBar closeProgressBar;
     StringPool pool;
 
     public void nativeKeyPressed(NativeKeyEvent e) {
@@ -48,70 +43,89 @@ public class Main extends JDialog implements NativeKeyListener {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                if (!isRun) {
-                    setVisible(false);
-                }
+                setVisible(false);
             }
         });
-
-        trayIcon = new TrayIcon(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/trayicon/trayrun.png"))).getImage());
 
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BorderLayout());
 
-        mainLabel = new JLabel("未运行");
+        closeProgressBar = new JProgressBar();
+        closeProgressBar.setMinimum(0);
+        closeProgressBar.setMaximum(100);
+        closeProgressBar.setStringPainted(false);
+        closeProgressBar.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                setVisible(false);
+            }
+        });
+
+        mainLabel = new JLabel();
         mainLabel.setFont(new Font("微软雅黑", Font.BOLD, 80));
         mainLabel.setHorizontalAlignment(SwingConstants.CENTER);
         mainLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (!isRun) {
-                    setVisible(false);
-                }
+                setVisible(false);
             }
         });
 
         mainPanel.add(mainLabel, BorderLayout.CENTER);
+        mainPanel.add(closeProgressBar, BorderLayout.SOUTH);
         getContentPane().add(mainPanel, BorderLayout.CENTER);
         validate();
+
+        trayIcon = new TrayIcon(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/trayicon/trayrun.png"))).getImage());
 
         if (SystemTray.isSupported()) {
             trayIcon.setToolTip("YuXiang Drawer");
 
             PopupMenu popupMenu = new PopupMenu();
 
-            runItem = new MenuItem("运行(Ctrl)");
+            MenuItem runItem = new MenuItem("运行(Ctrl)");
             runItem.addActionListener(e -> run());
             popupMenu.add(runItem);
 
-            switchItem = new MenuItem("热键(开)");
-            switchItem.addActionListener(e -> control());
+            MenuItem switchItem = new MenuItem("热键(开)");
+            switchItem.addActionListener(e -> {
+                isControl = !isControl;
+                if (isControl) {
+                    runItem.setLabel("运行(Ctrl)");
+                    switchItem.setLabel("热键(开)");
+                } else {
+                    runItem.setLabel("运行");
+                    switchItem.setLabel("热键(关)");
+                }
+            });
             popupMenu.add(switchItem);
 
             popupMenu.addSeparator();
 
             MenuItem resetItem = new MenuItem("重置");
             resetItem.addActionListener(e -> {
-                int isReset = JOptionPane.showConfirmDialog(Main.this, "是否重置pool.es文件？", "YuXiang Drawer", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-                if (isReset == 0) {
-                    pool.reset();
+                if (!isRun) {
+                    int isReset = JOptionPane.showConfirmDialog(Main.this, "是否重置pool.es文件？", "YuXiang Drawer", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                    if (isReset == 0) {
+                        pool.reset();
+                        pool.saveFile();
+                    }
                 }
             });
             popupMenu.add(resetItem);
 
             MenuItem saveItem = new MenuItem("保存");
             saveItem.addActionListener(e -> {
-                pool.saveFile();
-                ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-                trayIcon.setImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/trayicon/ok.png"))).getImage());
-                executor.schedule(() -> {
-                    if (isRun) {
-                        trayIcon.setImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/trayicon/traystop.png"))).getImage());
-                    } else {
-                        trayIcon.setImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/trayicon/trayrun.png"))).getImage());
-                    }
-                    executor.shutdown();
-                }, 1, TimeUnit.SECONDS);
+                if (!isRun) {
+                    pool.saveFile();
+                    trayIcon.setImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/trayicon/ok.png"))).getImage());
+                    new Timer().schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            trayIcon.setImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/trayicon/trayrun.png"))).getImage());
+                        }
+                    }, 1000);
+                }
             });
             popupMenu.add(saveItem);
 
@@ -134,76 +148,55 @@ public class Main extends JDialog implements NativeKeyListener {
         }
     }
 
-    private void control() {
-        if (isControl) {
-            isControl = false;
-            runItem.setLabel("运行");
-            switchItem.setLabel("热键(关)");
-        } else {
-            isControl = true;
-            runItem.setLabel("运行(Ctrl)");
-            switchItem.setLabel("热键(开)");
-        }
-    }
-
     private void run() {
-        if (!isShow) {
-            isShow = true;
+        if (!isRun) {
+            isRun = true;
             setVisible(true);
-            if (isRun) {
-                stop();
-            } else {
-                start();
-            }
-            timer = new Timer();
-            timer.schedule(new TimerTask() {
+            mainLabel.setForeground(Color.GRAY);
+            closeProgressBar.setValue(closeProgressBar.getMaximum());
+            setIconImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/icon/stop.png"))).getImage());
+            trayIcon.setImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/trayicon/traystop.png"))).getImage());
+            randomTimer = new Timer();
+            randomTimer.scheduleAtFixedRate(new TimerTask() {
+                int countdown = 8;
+
                 @Override
                 public void run() {
-                    if (isRun) {
-                        stop();
-                    } else {
-                        start();
+                    countdown--;
+                    mainLabel.setText(pool.getRandomString());
+                    if (countdown <= 0) {
+                        randomTimer.cancel();
+                        mainLabel.setForeground(Color.BLACK);
+                        pool.remove(mainLabel.getText());
+                        setIconImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/icon/run.png"))).getImage());
+                        trayIcon.setImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/trayicon/trayrun.png"))).getImage());
+                        isRun = false;
+                        close();
                     }
-                    isShow = false;
-                    timer.cancel();
                 }
-            }, 650);
+            }, 0, 90);
         }
     }
 
-    private void start() {
-        mainLabel.setForeground(Color.GRAY);
-        trayIcon.setImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/trayicon/traystop.png"))).getImage());
-        setIconImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/icon/stop.png"))).getImage());
-        if (pool.length() == 0) {
-            pool.reset();
-        }
-        isRun = true;
-        thread = new Thread(() -> {
-            Random random = new Random();
-            while (isRun) {
-                poolIndex = random.nextInt(pool.length());
-                mainLabel.setText(pool.get(poolIndex));
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    break;
+    private void close() {
+        closeTimer = new Timer();
+        closeTimer.scheduleAtFixedRate(new TimerTask() {
+            int countdown = 100;
+
+            @Override
+            public void run() {
+                countdown--;
+                closeProgressBar.setValue(countdown);
+                if (isRun) {
+                    closeTimer.cancel();
+                    closeProgressBar.setValue(closeProgressBar.getMaximum());
+                }
+                if (countdown <= 0) {
+                    closeTimer.cancel();
+                    setVisible(false);
                 }
             }
-        });
-        thread.start();
-    }
-
-    private void stop() {
-        mainLabel.setForeground(Color.BLACK);
-        trayIcon.setImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/trayicon/trayrun.png"))).getImage());
-        setIconImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/icon/run.png"))).getImage());
-        isRun = false;
-        if (thread != null) {
-            thread.interrupt();
-            thread = null;
-        }
-        pool.remove(poolIndex);
+        }, 0, 18);
     }
 
     public static void main(String[] args) {
@@ -211,7 +204,7 @@ public class Main extends JDialog implements NativeKeyListener {
         try {
             GlobalScreen.registerNativeHook();
         } catch (NativeHookException ex) {
-            JOptionPane.showMessageDialog(null, "系统按键注册失败，无法启动本程序。", "YuXiang Drawer", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "系统热键注册失败，无法启动本程序。", "YuXiang Drawer", JOptionPane.ERROR_MESSAGE);
             System.exit(0);
         }
         GlobalScreen.addNativeKeyListener(new Main());
