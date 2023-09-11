@@ -10,7 +10,6 @@ public class EncryptString {
         secretKeySpec = new SecretKeySpec("yuxiang118712023".getBytes(), AES_ALGORITHM);
     }
 
-    // 加密字符串
     protected String encrypt(String plainText) throws Exception {
         Cipher cipher = Cipher.getInstance(AES_ALGORITHM);
         cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec);
@@ -18,7 +17,6 @@ public class EncryptString {
         return Base64.getEncoder().encodeToString(encryptedBytes);
     }
 
-    // 解密字符串
     protected String decrypt(String encryptedText) throws Exception {
         Cipher cipher = Cipher.getInstance(AES_ALGORITHM);
         cipher.init(Cipher.DECRYPT_MODE, secretKeySpec);
