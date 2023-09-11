@@ -130,7 +130,7 @@ public class Main extends JDialog implements NativeKeyListener {
         });
         popupMenu.add(resetItem);
 
-        MenuItem saveItem = getMenuItem();
+        MenuItem saveItem = saveMenuItem();
         popupMenu.add(saveItem);
 
         popupMenu.addSeparator();
@@ -141,7 +141,7 @@ public class Main extends JDialog implements NativeKeyListener {
         return popupMenu;
     }
 
-    private MenuItem getMenuItem() {
+    private MenuItem saveMenuItem() {
         MenuItem saveItem = new MenuItem("保存");
         saveItem.addActionListener(e -> {
             if (!isRun) {
