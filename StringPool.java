@@ -18,34 +18,33 @@ public class StringPool {
         if (Files.exists(Paths.get("pool.es"))) {
             pool = new ArrayList<>(Arrays.asList(readFile("pool.es").split(",")));
         } else {
-            reset();
+            resetPool();
         }
         if (pool.get(0).isEmpty()) {
             pool = new ArrayList<>(initPool);
         }
         Timer timer = new Timer();
+        // 每5分钟保存一次
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
                 saveFile();
             }
-        }, 0, 300000); // 每5分钟保存一次
+        }, 0, 300000);
     }
 
     protected String getRandomString() {
         if (pool.isEmpty()) {
-            reset();
+            resetPool();
         }
         return pool.get(random.nextInt(pool.size()));
     }
 
-    // 重置卡池
-    protected void reset() {
+    protected void resetPool() {
         pool = new ArrayList<>(initPool);
     }
 
-    // 删除字符串
-    protected void remove(String str) {
+    protected void removeString(String str) {
         pool.remove(str);
     }
 
@@ -62,7 +61,7 @@ public class StringPool {
         return text;
     }
 
-    public void saveFile() {
+    protected void saveFile() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("pool.es"))) {
             writer.write(es.encrypt(String.join(",", pool)));
         } catch (Exception e) {
