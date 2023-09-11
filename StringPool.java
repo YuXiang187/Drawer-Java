@@ -20,7 +20,7 @@ public class StringPool {
         } else {
             reset();
         }
-        if (pool.get(0).equals("")) {
+        if (pool.get(0).isEmpty()) {
             pool = new ArrayList<>(initPool);
         }
         Timer timer = new Timer();
@@ -29,12 +29,11 @@ public class StringPool {
             public void run() {
                 saveFile();
             }
-        }, 0, 600000); // 每10分钟保存一次
+        }, 0, 300000); // 每5分钟保存一次
     }
 
-    // 获取随机字符串
     protected String getRandomString() {
-        if (pool.size() == 0) {
+        if (pool.isEmpty()) {
             reset();
         }
         return pool.get(random.nextInt(pool.size()));
@@ -50,7 +49,6 @@ public class StringPool {
         pool.remove(str);
     }
 
-    // 读取文件
     private String readFile(String fileName) {
         StringBuilder contentBuilder = new StringBuilder();
         String text = null;
@@ -64,7 +62,6 @@ public class StringPool {
         return text;
     }
 
-    // 保存文件
     public void saveFile() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("pool.es"))) {
             writer.write(es.encrypt(String.join(",", pool)));
