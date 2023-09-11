@@ -81,7 +81,7 @@ public class Main extends JDialog implements NativeKeyListener {
         if (SystemTray.isSupported()) {
             trayIcon.setToolTip("YuXiang Drawer");
 
-            PopupMenu popupMenu = getPopupMenu();
+            PopupMenu popupMenu = mainPopupMenu();
 
             trayIcon.setPopupMenu(popupMenu);
             SystemTray systemTray = SystemTray.getSystemTray();
@@ -96,7 +96,7 @@ public class Main extends JDialog implements NativeKeyListener {
         }
     }
 
-    private PopupMenu getPopupMenu() {
+    private PopupMenu mainPopupMenu() {
         PopupMenu popupMenu = new PopupMenu();
 
         MenuItem runItem = new MenuItem("运行(Ctrl)");
@@ -123,8 +123,8 @@ public class Main extends JDialog implements NativeKeyListener {
             if (!isRun) {
                 int isReset = JOptionPane.showConfirmDialog(Main.this, "是否重置pool.es文件？", "YuXiang Drawer", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
                 if (isReset == 0) {
-                    pool.resetPool();
-                    pool.saveFile();
+                    pool.reset();
+                    pool.save();
                 }
             }
         });
@@ -145,7 +145,7 @@ public class Main extends JDialog implements NativeKeyListener {
         MenuItem saveItem = new MenuItem("保存");
         saveItem.addActionListener(e -> {
             if (!isRun) {
-                pool.saveFile();
+                pool.save();
                 trayIcon.setImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/trayicon/ok.png"))).getImage());
                 new Timer().schedule(new TimerTask() {
                     @Override
@@ -173,11 +173,11 @@ public class Main extends JDialog implements NativeKeyListener {
                 @Override
                 public void run() {
                     countdown--;
-                    mainLabel.setText(pool.getRandomString());
+                    mainLabel.setText(pool.get());
                     if (countdown <= 0) {
                         randomTimer.cancel();
                         mainLabel.setForeground(Color.BLACK);
-                        pool.removeString(mainLabel.getText());
+                        pool.remove(mainLabel.getText());
                         setIconImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/icon/run.png"))).getImage());
                         trayIcon.setImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/trayicon/trayrun.png"))).getImage());
                         isRun = false;
