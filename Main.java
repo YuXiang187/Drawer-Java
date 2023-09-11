@@ -81,71 +81,81 @@ public class Main extends JDialog implements NativeKeyListener {
         if (SystemTray.isSupported()) {
             trayIcon.setToolTip("YuXiang Drawer");
 
-            PopupMenu popupMenu = new PopupMenu();
-
-            MenuItem runItem = new MenuItem("运行(Ctrl)");
-            runItem.addActionListener(e -> run());
-            popupMenu.add(runItem);
-
-            MenuItem switchItem = new MenuItem("热键(开)");
-            switchItem.addActionListener(e -> {
-                isControl = !isControl;
-                if (isControl) {
-                    runItem.setLabel("运行(Ctrl)");
-                    switchItem.setLabel("热键(开)");
-                } else {
-                    runItem.setLabel("运行");
-                    switchItem.setLabel("热键(关)");
-                }
-            });
-            popupMenu.add(switchItem);
-
-            popupMenu.addSeparator();
-
-            MenuItem resetItem = new MenuItem("重置");
-            resetItem.addActionListener(e -> {
-                if (!isRun) {
-                    int isReset = JOptionPane.showConfirmDialog(Main.this, "是否重置pool.es文件？", "YuXiang Drawer", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-                    if (isReset == 0) {
-                        pool.reset();
-                        pool.saveFile();
-                    }
-                }
-            });
-            popupMenu.add(resetItem);
-
-            MenuItem saveItem = new MenuItem("保存");
-            saveItem.addActionListener(e -> {
-                if (!isRun) {
-                    pool.saveFile();
-                    trayIcon.setImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/trayicon/ok.png"))).getImage());
-                    new Timer().schedule(new TimerTask() {
-                        @Override
-                        public void run() {
-                            trayIcon.setImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/trayicon/trayrun.png"))).getImage());
-                        }
-                    }, 1000);
-                }
-            });
-            popupMenu.add(saveItem);
-
-            popupMenu.addSeparator();
-
-            MenuItem exitItem = new MenuItem("退出");
-            exitItem.addActionListener(e -> System.exit(0));
-            popupMenu.add(exitItem);
+            PopupMenu popupMenu = getPopupMenu();
 
             trayIcon.setPopupMenu(popupMenu);
             SystemTray systemTray = SystemTray.getSystemTray();
             try {
                 systemTray.add(trayIcon);
             } catch (Exception e) {
-                e.printStackTrace();
+                JOptionPane.showMessageDialog(null, "您当前的操作系统不支持系统托盘，无法启动本程序。", "YuXiang Drawer", JOptionPane.ERROR_MESSAGE);
             }
         } else {
             JOptionPane.showMessageDialog(null, "您当前的操作系统不支持系统托盘，无法启动本程序。", "YuXiang Drawer", JOptionPane.ERROR_MESSAGE);
             System.exit(0);
         }
+    }
+
+    private PopupMenu getPopupMenu() {
+        PopupMenu popupMenu = new PopupMenu();
+
+        MenuItem runItem = new MenuItem("运行(Ctrl)");
+        runItem.addActionListener(e -> run());
+        popupMenu.add(runItem);
+
+        MenuItem switchItem = new MenuItem("热键(开)");
+        switchItem.addActionListener(e -> {
+            isControl = !isControl;
+            if (isControl) {
+                runItem.setLabel("运行(Ctrl)");
+                switchItem.setLabel("热键(开)");
+            } else {
+                runItem.setLabel("运行");
+                switchItem.setLabel("热键(关)");
+            }
+        });
+        popupMenu.add(switchItem);
+
+        popupMenu.addSeparator();
+
+        MenuItem resetItem = new MenuItem("重置");
+        resetItem.addActionListener(e -> {
+            if (!isRun) {
+                int isReset = JOptionPane.showConfirmDialog(Main.this, "是否重置pool.es文件？", "YuXiang Drawer", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                if (isReset == 0) {
+                    pool.reset();
+                    pool.saveFile();
+                }
+            }
+        });
+        popupMenu.add(resetItem);
+
+        MenuItem saveItem = getMenuItem();
+        popupMenu.add(saveItem);
+
+        popupMenu.addSeparator();
+
+        MenuItem exitItem = new MenuItem("退出");
+        exitItem.addActionListener(e -> System.exit(0));
+        popupMenu.add(exitItem);
+        return popupMenu;
+    }
+
+    private MenuItem getMenuItem() {
+        MenuItem saveItem = new MenuItem("保存");
+        saveItem.addActionListener(e -> {
+            if (!isRun) {
+                pool.saveFile();
+                trayIcon.setImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/trayicon/ok.png"))).getImage());
+                new Timer().schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        trayIcon.setImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/trayicon/trayrun.png"))).getImage());
+                    }
+                }, 1000);
+            }
+        });
+        return saveItem;
     }
 
     private void run() {
