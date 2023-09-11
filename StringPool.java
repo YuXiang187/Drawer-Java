@@ -14,11 +14,11 @@ public class StringPool {
     public StringPool() {
         es = new EncryptString();
         random = new Random();
-        initPool = new ArrayList<>(Arrays.asList(readFile("list.es").split(",")));
+        initPool = new ArrayList<>(Arrays.asList(read("list.es").split(",")));
         if (Files.exists(Paths.get("pool.es"))) {
-            pool = new ArrayList<>(Arrays.asList(readFile("pool.es").split(",")));
+            pool = new ArrayList<>(Arrays.asList(read("pool.es").split(",")));
         } else {
-            resetPool();
+            reset();
         }
         if (pool.get(0).isEmpty()) {
             pool = new ArrayList<>(initPool);
@@ -28,27 +28,27 @@ public class StringPool {
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                saveFile();
+                save();
             }
         }, 0, 300000);
     }
 
-    protected String getRandomString() {
+    protected String get() {
         if (pool.isEmpty()) {
-            resetPool();
+            reset();
         }
         return pool.get(random.nextInt(pool.size()));
     }
 
-    protected void resetPool() {
+    protected void reset() {
         pool = new ArrayList<>(initPool);
     }
 
-    protected void removeString(String str) {
+    protected void remove(String str) {
         pool.remove(str);
     }
 
-    private String readFile(String fileName) {
+    private String read(String fileName) {
         StringBuilder contentBuilder = new StringBuilder();
         String text = null;
         try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
@@ -61,7 +61,7 @@ public class StringPool {
         return text;
     }
 
-    protected void saveFile() {
+    protected void save() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("pool.es"))) {
             writer.write(es.encrypt(String.join(",", pool)));
         } catch (Exception e) {
