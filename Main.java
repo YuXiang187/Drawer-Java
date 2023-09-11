@@ -123,7 +123,7 @@ public class Main extends JDialog implements NativeKeyListener {
             if (!isRun) {
                 int isReset = JOptionPane.showConfirmDialog(Main.this, "是否重置pool.es文件？", "YuXiang Drawer", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
                 if (isReset == 0) {
-                    pool.reset();
+                    pool.resetPool();
                     pool.saveFile();
                 }
             }
@@ -177,7 +177,7 @@ public class Main extends JDialog implements NativeKeyListener {
                     if (countdown <= 0) {
                         randomTimer.cancel();
                         mainLabel.setForeground(Color.BLACK);
-                        pool.remove(mainLabel.getText());
+                        pool.removeString(mainLabel.getText());
                         setIconImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/icon/run.png"))).getImage());
                         trayIcon.setImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/trayicon/trayrun.png"))).getImage());
                         isRun = false;
