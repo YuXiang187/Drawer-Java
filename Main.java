@@ -89,6 +89,7 @@ public class Main extends JDialog implements NativeKeyListener {
                 systemTray.add(trayIcon);
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(null, "您当前的操作系统不支持系统托盘，无法启动本程序。", "YuXiang Drawer", JOptionPane.ERROR_MESSAGE);
+                System.exit(0);
             }
         } else {
             JOptionPane.showMessageDialog(null, "您当前的操作系统不支持系统托盘，无法启动本程序。", "YuXiang Drawer", JOptionPane.ERROR_MESSAGE);
