@@ -119,44 +119,10 @@ public class Main extends JDialog implements NativeKeyListener {
 
         popupMenu.addSeparator();
 
-        MenuItem resetItem = new MenuItem("重置");
-        resetItem.addActionListener(e -> {
-            if (!isRun) {
-                int isReset = JOptionPane.showConfirmDialog(Main.this, "是否重置pool.es文件？", "YuXiang Drawer", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-                if (isReset == 0) {
-                    pool.reset();
-                    pool.save();
-                }
-            }
-        });
-        popupMenu.add(resetItem);
-
-        MenuItem saveItem = saveMenuItem();
-        popupMenu.add(saveItem);
-
-        popupMenu.addSeparator();
-
         MenuItem exitItem = new MenuItem("退出");
         exitItem.addActionListener(e -> System.exit(0));
         popupMenu.add(exitItem);
         return popupMenu;
-    }
-
-    private MenuItem saveMenuItem() {
-        MenuItem saveItem = new MenuItem("保存");
-        saveItem.addActionListener(e -> {
-            if (!isRun) {
-                pool.save();
-                trayIcon.setImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/trayicon/ok.png"))).getImage());
-                new Timer().schedule(new TimerTask() {
-                    @Override
-                    public void run() {
-                        trayIcon.setImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/trayicon/trayrun.png"))).getImage());
-                    }
-                }, 1000);
-            }
-        });
-        return saveItem;
     }
 
     private void run() {
@@ -179,6 +145,7 @@ public class Main extends JDialog implements NativeKeyListener {
                         randomTimer.cancel();
                         mainLabel.setForeground(Color.BLACK);
                         pool.remove(mainLabel.getText());
+                        pool.save();
                         setIconImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/icon/run.png"))).getImage());
                         trayIcon.setImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/trayicon/trayrun.png"))).getImage());
                         isRun = false;
