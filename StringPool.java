@@ -3,7 +3,6 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.Timer;
 
 public class StringPool {
     EncryptString es;
@@ -23,14 +22,6 @@ public class StringPool {
         if (pool.get(0).isEmpty()) {
             pool = new ArrayList<>(initPool);
         }
-        Timer timer = new Timer();
-        // 每5分钟保存一次
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                save();
-            }
-        }, 0, 300000);
     }
 
     protected String get() {
