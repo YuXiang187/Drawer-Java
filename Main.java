@@ -5,6 +5,7 @@ import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
 
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -85,6 +86,7 @@ public class Main extends JDialog implements NativeKeyListener {
         floatWindow.setLocationRelativeTo(null);
 
         runLabel = new JLabel(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/icon/run.png"))));
+        runLabel.setBorder(new LineBorder(Color.GRAY));
         runLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
