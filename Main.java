@@ -6,14 +6,18 @@ import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
-import java.util.Timer;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.Objects;
+import java.util.Timer;
 import java.util.TimerTask;
 
 public class Main extends JDialog implements NativeKeyListener {
-    boolean isRun = false;
-    boolean isControl = true;
+    private static boolean isRun = false;
+    private static boolean isControl = true;
+    private static Point mouseDownCompCoords = null;
 
     JLabel mainLabel;
     Timer randomTimer;
@@ -21,13 +25,12 @@ public class Main extends JDialog implements NativeKeyListener {
     TrayIcon trayIcon;
     JProgressBar closeProgressBar;
     StringPool pool;
+    JWindow floatWindow;
+    JLabel runLabel;
 
-    public void nativeKeyPressed(NativeKeyEvent e) {
-        if (e.getKeyCode() == 29) {
-            if (isControl) {
-                run();
-            }
-        }
+    @Override
+    public void nativeKeyPressed(NativeKeyEvent nativeEvent) {
+        if (nativeEvent.getKeyCode() == 29 && isControl) run();
     }
 
     public Main() {
@@ -76,6 +79,34 @@ public class Main extends JDialog implements NativeKeyListener {
         getContentPane().add(mainPanel, BorderLayout.CENTER);
         validate();
 
+        floatWindow = new JWindow();
+        floatWindow.setSize(50, 50);
+        floatWindow.setAlwaysOnTop(true);
+        floatWindow.setLocationRelativeTo(null);
+
+        runLabel = new JLabel(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/icon/run.png"))));
+        runLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                run();
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                mouseDownCompCoords = e.getPoint();
+            }
+        });
+        runLabel.addMouseMotionListener(new MouseAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                Point currCoords = e.getLocationOnScreen();
+                floatWindow.setLocation(currCoords.x - mouseDownCompCoords.x, currCoords.y - mouseDownCompCoords.y);
+            }
+        });
+
+        floatWindow.add(runLabel);
+        floatWindow.setVisible(false);
+
         trayIcon = new TrayIcon(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/trayicon/trayrun.png"))).getImage());
 
         if (SystemTray.isSupported()) {
@@ -83,7 +114,14 @@ public class Main extends JDialog implements NativeKeyListener {
 
             PopupMenu popupMenu = mainPopupMenu();
 
+            trayIcon.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    if (e.getButton() == MouseEvent.BUTTON1 && isControl) run();
+                }
+            });
             trayIcon.setPopupMenu(popupMenu);
+
             SystemTray systemTray = SystemTray.getSystemTray();
             try {
                 systemTray.add(trayIcon);
@@ -117,6 +155,18 @@ public class Main extends JDialog implements NativeKeyListener {
         });
         popupMenu.add(switchItem);
 
+        MenuItem floatItem = new MenuItem("浮窗(关)");
+        floatItem.addActionListener(e -> {
+            if (floatWindow.isVisible()) {
+                floatItem.setLabel("浮窗(关)");
+                floatWindow.setVisible(false);
+            } else {
+                floatItem.setLabel("浮窗(开)");
+                floatWindow.setVisible(true);
+            }
+        });
+        popupMenu.add(floatItem);
+
         popupMenu.addSeparator();
 
         MenuItem exitItem = new MenuItem("退出");
@@ -132,6 +182,7 @@ public class Main extends JDialog implements NativeKeyListener {
             mainLabel.setForeground(Color.GRAY);
             closeProgressBar.setValue(closeProgressBar.getMaximum());
             setIconImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/icon/stop.png"))).getImage());
+            runLabel.setIcon(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/icon/stop.png"))));
             trayIcon.setImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/trayicon/traystop.png"))).getImage());
             randomTimer = new Timer();
             randomTimer.scheduleAtFixedRate(new TimerTask() {
@@ -147,6 +198,7 @@ public class Main extends JDialog implements NativeKeyListener {
                         pool.remove(mainLabel.getText());
                         pool.save();
                         setIconImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/icon/run.png"))).getImage());
+                        runLabel.setIcon(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/icon/run.png"))));
                         trayIcon.setImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/trayicon/trayrun.png"))).getImage());
                         isRun = false;
                         close();
