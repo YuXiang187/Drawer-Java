@@ -34,7 +34,7 @@ public class Config {
             properties.store(output, "Drawer");
             output.close();
         } catch (IOException e) {
-            JOptionPane.showMessageDialog(null, "配置文件config.properties写入错误，无法启动本程序。", "YuXiang Drawer", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "配置文件config.properties写入错误。", "YuXiang Drawer", JOptionPane.ERROR_MESSAGE);
             System.exit(0);
         }
 
@@ -46,7 +46,7 @@ public class Config {
             properties.load(input);
             input.close();
         } catch (IOException e) {
-            JOptionPane.showMessageDialog(null, "配置文件config.properties读取错误，无法启动本程序。", "YuXiang Drawer", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "配置文件config.properties读取错误。", "YuXiang Drawer", JOptionPane.ERROR_MESSAGE);
             System.exit(0);
         }
         return Boolean.parseBoolean(properties.getProperty(key));
