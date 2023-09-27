@@ -20,6 +20,7 @@ public class Main extends JDialog implements NativeKeyListener {
     private static boolean isControl = true;
     private static Point mouseDownCompCoords = null;
     private static Dimension screenSize;
+    private final Config config;
 
     JLabel mainLabel;
     Timer randomTimer;
@@ -37,6 +38,8 @@ public class Main extends JDialog implements NativeKeyListener {
 
     public Main() {
         pool = new StringPool();
+        config = new Config();
+        isControl = config.get("isHotKey");
 
         setTitle("YuXiang Drawer");
         setSize(450, 250);
@@ -110,7 +113,7 @@ public class Main extends JDialog implements NativeKeyListener {
         });
 
         floatWindow.add(runLabel);
-        floatWindow.setVisible(false);
+        floatWindow.setVisible(config.get("isFloatWindow"));
 
         trayIcon = new TrayIcon(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/trayicon/trayrun.png"))).getImage());
 
@@ -143,13 +146,14 @@ public class Main extends JDialog implements NativeKeyListener {
     private PopupMenu mainPopupMenu() {
         PopupMenu popupMenu = new PopupMenu();
 
-        MenuItem runItem = new MenuItem("运行(Ctrl)");
+        MenuItem runItem = new MenuItem("运行");
         runItem.addActionListener(e -> run());
         popupMenu.add(runItem);
 
-        MenuItem switchItem = new MenuItem("热键(开)");
+        MenuItem switchItem = new MenuItem("热键");
         switchItem.addActionListener(e -> {
             isControl = !isControl;
+            config.set("isHotKey", isControl);
             if (isControl) {
                 runItem.setLabel("运行(Ctrl)");
                 switchItem.setLabel("热键(开)");
@@ -160,18 +164,34 @@ public class Main extends JDialog implements NativeKeyListener {
         });
         popupMenu.add(switchItem);
 
-        MenuItem floatItem = new MenuItem("浮窗(关)");
+        if (isControl) {
+            runItem.setLabel("运行(Ctrl)");
+            switchItem.setLabel("热键(开)");
+        } else {
+            runItem.setLabel("运行");
+            switchItem.setLabel("热键(关)");
+        }
+
+        MenuItem floatItem = new MenuItem("浮窗");
         floatItem.addActionListener(e -> {
             if (floatWindow.isVisible()) {
                 floatItem.setLabel("浮窗(关)");
                 floatWindow.setVisible(false);
+                config.set("isFloatWindow", false);
             } else {
                 floatItem.setLabel("浮窗(开)");
                 floatWindow.setLocation(screenSize.width - 150, screenSize.height - 130);
                 floatWindow.setVisible(true);
+                config.set("isFloatWindow", true);
             }
         });
         popupMenu.add(floatItem);
+
+        if (floatWindow.isVisible()) {
+            floatItem.setLabel("浮窗(开)");
+        } else {
+            floatItem.setLabel("浮窗(关)");
+        }
 
         popupMenu.addSeparator();
 
