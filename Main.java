@@ -19,6 +19,7 @@ public class Main extends JDialog implements NativeKeyListener {
     private static boolean isRun = false;
     private static boolean isControl = true;
     private static Point mouseDownCompCoords = null;
+    private static Dimension screenSize;
 
     JLabel mainLabel;
     Timer randomTimer;
@@ -80,10 +81,12 @@ public class Main extends JDialog implements NativeKeyListener {
         getContentPane().add(mainPanel, BorderLayout.CENTER);
         validate();
 
+        screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+
         floatWindow = new JWindow();
         floatWindow.setSize(50, 50);
         floatWindow.setAlwaysOnTop(true);
-        floatWindow.setLocationRelativeTo(null);
+        floatWindow.setLocation(screenSize.width - 150, screenSize.height - 130);
 
         runLabel = new JLabel(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/icon/run.png"))));
         runLabel.setBorder(new LineBorder(Color.GRAY));
@@ -164,6 +167,7 @@ public class Main extends JDialog implements NativeKeyListener {
                 floatWindow.setVisible(false);
             } else {
                 floatItem.setLabel("浮窗(开)");
+                floatWindow.setLocation(screenSize.width - 150, screenSize.height - 130);
                 floatWindow.setVisible(true);
             }
         });
