@@ -15,8 +15,7 @@ public class Config {
 
         try {
             if (configFile.createNewFile()) {
-                set("isHotKey", true);
-                set("isFloatWindow", false);
+                set(true);
             }
             FileInputStream input = new FileInputStream(configFile);
             properties.load(input);
@@ -27,20 +26,19 @@ public class Config {
         }
     }
 
-    protected void set(String key, boolean value) {
-        properties.setProperty(key, String.valueOf(value));
+    protected void set(boolean value) {
+        properties.setProperty("isHotKey", String.valueOf(value));
         try {
             FileOutputStream output = new FileOutputStream(configFile);
-            properties.store(output, "Drawer");
+            properties.store(output, "Drawer Config");
             output.close();
         } catch (IOException e) {
             JOptionPane.showMessageDialog(null, "配置文件config.properties写入错误。", "YuXiang Drawer", JOptionPane.ERROR_MESSAGE);
             System.exit(0);
         }
-
     }
 
-    protected boolean get(String key) {
+    protected boolean get() {
         try {
             FileInputStream input = new FileInputStream(configFile);
             properties.load(input);
@@ -49,6 +47,6 @@ public class Config {
             JOptionPane.showMessageDialog(null, "配置文件config.properties读取错误。", "YuXiang Drawer", JOptionPane.ERROR_MESSAGE);
             System.exit(0);
         }
-        return Boolean.parseBoolean(properties.getProperty(key));
+        return Boolean.parseBoolean(properties.getProperty("isHotKey"));
     }
 }
