@@ -17,8 +17,8 @@ import java.util.TimerTask;
 
 public class Main extends JDialog implements NativeKeyListener {
     private static boolean isRun = false;
-    private static boolean isControl = true;
-    private static Point mouseDownCompCoords = null;
+    private static boolean isHotKey;
+    private static Point mouseDownCompCoords;
     private static Dimension screenSize;
     private final Config config;
 
@@ -33,13 +33,13 @@ public class Main extends JDialog implements NativeKeyListener {
 
     @Override
     public void nativeKeyPressed(NativeKeyEvent nativeEvent) {
-        if (nativeEvent.getKeyCode() == 29 && isControl) run();
+        if (nativeEvent.getKeyCode() == 29 && isHotKey) run();
     }
 
     public Main() {
         pool = new StringPool();
         config = new Config();
-        isControl = config.get("isHotKey");
+        isHotKey = config.get();
 
         setTitle("YuXiang Drawer");
         setSize(450, 250);
@@ -47,6 +47,7 @@ public class Main extends JDialog implements NativeKeyListener {
         setIconImage(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/icon/run.png"))).getImage());
         setResizable(false);
         setAlwaysOnTop(true);
+        setLayout(new BorderLayout());
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             @Override
@@ -62,22 +63,10 @@ public class Main extends JDialog implements NativeKeyListener {
         closeProgressBar.setMinimum(0);
         closeProgressBar.setMaximum(100);
         closeProgressBar.setStringPainted(false);
-        closeProgressBar.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                setVisible(false);
-            }
-        });
 
         mainLabel = new JLabel();
         mainLabel.setFont(new Font("微软雅黑", Font.BOLD, 80));
         mainLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        mainLabel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                setVisible(false);
-            }
-        });
 
         mainPanel.add(mainLabel, BorderLayout.CENTER);
         mainPanel.add(closeProgressBar, BorderLayout.SOUTH);
@@ -113,7 +102,7 @@ public class Main extends JDialog implements NativeKeyListener {
         });
 
         floatWindow.add(runLabel);
-        floatWindow.setVisible(config.get("isFloatWindow"));
+        floatWindow.setVisible(!config.get());
 
         trayIcon = new TrayIcon(new ImageIcon(Objects.requireNonNull(this.getClass().getResource("/trayicon/trayrun.png"))).getImage());
 
@@ -125,7 +114,7 @@ public class Main extends JDialog implements NativeKeyListener {
             trayIcon.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    if (e.getButton() == MouseEvent.BUTTON1 && isControl) run();
+                    if (e.getButton() == MouseEvent.BUTTON1) run();
                 }
             });
             trayIcon.setPopupMenu(popupMenu);
@@ -146,59 +135,60 @@ public class Main extends JDialog implements NativeKeyListener {
     private PopupMenu mainPopupMenu() {
         PopupMenu popupMenu = new PopupMenu();
 
-        MenuItem runItem = new MenuItem("运行");
-        runItem.addActionListener(e -> run());
-        popupMenu.add(runItem);
-
-        MenuItem switchItem = new MenuItem("热键");
-        switchItem.addActionListener(e -> {
-            isControl = !isControl;
-            config.set("isHotKey", isControl);
-            if (isControl) {
-                runItem.setLabel("运行(Ctrl)");
-                switchItem.setLabel("热键(开)");
-            } else {
-                runItem.setLabel("运行");
-                switchItem.setLabel("热键(关)");
-            }
+        MenuItem hotKeyItem = new MenuItem("热键");
+        MenuItem floatWindowItem = new MenuItem("浮窗");
+        MenuItem stopItem = new MenuItem("暂停");
+        hotKeyItem.addActionListener(e -> {
+            isHotKey = true;
+            config.set(true);
+            isHotKey(hotKeyItem, floatWindowItem, stopItem);
         });
-        popupMenu.add(switchItem);
-
-        if (isControl) {
-            runItem.setLabel("运行(Ctrl)");
-            switchItem.setLabel("热键(开)");
-        } else {
-            runItem.setLabel("运行");
-            switchItem.setLabel("热键(关)");
-        }
-
-        MenuItem floatItem = new MenuItem("浮窗");
-        floatItem.addActionListener(e -> {
-            if (floatWindow.isVisible()) {
-                floatItem.setLabel("浮窗(关)");
-                floatWindow.setVisible(false);
-                config.set("isFloatWindow", false);
-            } else {
-                floatItem.setLabel("浮窗(开)");
-                floatWindow.setLocation(screenSize.width - 150, screenSize.height - 130);
-                floatWindow.setVisible(true);
-                config.set("isFloatWindow", true);
-            }
+        floatWindowItem.addActionListener(e -> {
+            isHotKey = false;
+            config.set(false);
+            isHotKey(hotKeyItem, floatWindowItem, stopItem);
         });
-        popupMenu.add(floatItem);
+        stopItem.addActionListener(e -> {
+            hotKeyItem.setEnabled(true);
+            floatWindowItem.setEnabled(true);
+            stopItem.setEnabled(false);
+            isHotKey = false;
+            floatWindow.setVisible(false);
+        });
+        popupMenu.add(hotKeyItem);
+        popupMenu.add(floatWindowItem);
+        popupMenu.add(stopItem);
 
-        if (floatWindow.isVisible()) {
-            floatItem.setLabel("浮窗(开)");
-        } else {
-            floatItem.setLabel("浮窗(关)");
-        }
+        isHotKey(hotKeyItem, floatWindowItem, stopItem);
 
         popupMenu.addSeparator();
 
         MenuItem exitItem = new MenuItem("退出");
-        exitItem.addActionListener(e -> System.exit(0));
+        exitItem.addActionListener(e -> {
+            int option = JOptionPane.showConfirmDialog(null, "是否退出程序？", "YuXiang Drawer", JOptionPane.YES_NO_OPTION);
+            if (option == JOptionPane.YES_OPTION) {
+                System.exit(0);
+            }
+        });
         popupMenu.add(exitItem);
         return popupMenu;
+    }
+
+    private void isHotKey(MenuItem hotKeyItem, MenuItem floatWindowItem, MenuItem stopItem) {
+        if (isHotKey) {
+            hotKeyItem.setEnabled(false);
+            floatWindowItem.setEnabled(true);
+            stopItem.setEnabled(true);
+            floatWindow.setVisible(false);
+            trayIcon.displayMessage("YuXiang Drawer - 热键模式", "在热键模式下，您可以通过按下键盘上的Ctrl键来随机抽取名称。", TrayIcon.MessageType.INFO);
+        } else {
+            hotKeyItem.setEnabled(true);
+            floatWindowItem.setEnabled(false);
+            stopItem.setEnabled(true);
+            floatWindow.setLocation(screenSize.width - 150, screenSize.height - 140);
+            floatWindow.setVisible(true);
+            trayIcon.displayMessage("YuXiang Drawer - 浮窗模式", "在浮窗模式下，您可以通过点击悬浮弹窗上的按钮来随机抽取名称。", TrayIcon.MessageType.INFO);
+        }
     }
 
     private void run() {
