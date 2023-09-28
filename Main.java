@@ -142,11 +142,13 @@ public class Main extends JDialog implements NativeKeyListener {
             isHotKey = true;
             config.set(true);
             isHotKey(hotKeyItem, floatWindowItem, stopItem);
+            trayIcon.displayMessage("YuXiang Drawer - 热键模式", "在热键模式下，您可以通过按下键盘上的Ctrl键来随机抽取名称。", TrayIcon.MessageType.INFO);
         });
         floatWindowItem.addActionListener(e -> {
             isHotKey = false;
             config.set(false);
             isHotKey(hotKeyItem, floatWindowItem, stopItem);
+            trayIcon.displayMessage("YuXiang Drawer - 浮窗模式", "在浮窗模式下，您可以通过点击悬浮弹窗上的按钮来随机抽取名称。", TrayIcon.MessageType.INFO);
         });
         stopItem.addActionListener(e -> {
             hotKeyItem.setEnabled(true);
@@ -180,14 +182,12 @@ public class Main extends JDialog implements NativeKeyListener {
             floatWindowItem.setEnabled(true);
             stopItem.setEnabled(true);
             floatWindow.setVisible(false);
-            trayIcon.displayMessage("YuXiang Drawer - 热键模式", "在热键模式下，您可以通过按下键盘上的Ctrl键来随机抽取名称。", TrayIcon.MessageType.INFO);
         } else {
             hotKeyItem.setEnabled(true);
             floatWindowItem.setEnabled(false);
             stopItem.setEnabled(true);
             floatWindow.setLocation(screenSize.width - 150, screenSize.height - 140);
             floatWindow.setVisible(true);
-            trayIcon.displayMessage("YuXiang Drawer - 浮窗模式", "在浮窗模式下，您可以通过点击悬浮弹窗上的按钮来随机抽取名称。", TrayIcon.MessageType.INFO);
         }
     }
 
