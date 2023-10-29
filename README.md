@@ -1,4 +1,6 @@
-# Drawer
+# Drawer-Java
+
+**本项目已于2023年10月29日停止维护。新的Drawer项目将采用C#编写，请前往新的[Drawer](https://github.com/YuXiang187/Drawer)项目主页查看本项目的后续开发版本。**
 
 一个简易的名称抽取程序。
 
